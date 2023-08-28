@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var tvYValue: TextView
     private lateinit var tvZValue: TextView
     private lateinit var tvHalfCosTheta: TextView
+    private lateinit var cvCustomView: ArrowDisplay
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         tvYValue = findViewById(R.id.rotationYValue)
         tvZValue = findViewById(R.id.rotationZValue)
         tvHalfCosTheta = findViewById(R.id.rotationCosineHalfTheta)
+
+        cvCustomView = findViewById(R.id.arrowDisplay)
     }
 
     override fun onPause() {
@@ -45,7 +48,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Failing to do so can drain the battery in just a few hours because some sensors have substantial power requirements and can use up battery power quickly."
         //
         // HOWEVER...
-        // According to AndroidAuthority, though: "you shouldn’t unregister your listeners in onPause(),
+        // According to AndroidAuthority, though: "you shouldn't unregister your listeners in onPause(),
         // as in Android 7.0 and higher applications can run in split-screen and picture-in-picture mode,
         // where they’re in a paused state, but remain visible onscreen."
         // https://www.androidauthority.com/master-android-sensors-946024/
@@ -71,9 +74,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             tvHalfCosTheta.text = event.values[3].toString()
 
             // Could go for 3x3 - we're going to overwrite the Z-axis values in that matrix, right?
-            var matrix = FloatArray(16)
+            val matrix = FloatArray(16)
 
             SensorManager.getRotationMatrixFromVector(matrix, event.values)
+            cvCustomView.receiveMatrix(matrix)
+
         } else {
             Log.i("Sensing!", "sensor event is null...")
         }

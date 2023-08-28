@@ -1,6 +1,8 @@
 package com.cormontia.motionsensors
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
@@ -15,27 +17,35 @@ import android.view.View
 class ArrowDisplay : View {
 
     private val measuredMatrix = Matrix()
-    private val paint = Paint()
+    private val solidRedPaint = Paint()
+    private val redOutlinePaint = Paint()
+    private lateinit var image: Bitmap
 
     constructor(context: Context) : super(context) {
-        init(null, 0)
+        init(context, null, 0)
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init(attrs, 0)
+        init(context, attrs, 0)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        init(attrs, defStyle)
+        init(context, attrs, defStyle)
     }
 
-    private fun init(attrs: AttributeSet?, defStyle: Int) {
-        paint.color = Color.RED
-        paint.style = Paint.Style.FILL_AND_STROKE
+    private fun init(ctx: Context, attrs: AttributeSet?, defStyle: Int) {
+        solidRedPaint.color = Color.RED
+        solidRedPaint.style = Paint.Style.FILL_AND_STROKE
+
+        redOutlinePaint.color = Color.RED
+        redOutlinePaint.style = Paint.Style.STROKE
+
+        image = BitmapFactory.decodeResource(ctx.resources, R.drawable.arrow)
     }
 
     fun receiveMatrix(floats: FloatArray) {
         measuredMatrix.setValues(floats)
+        invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -51,12 +61,14 @@ class ArrowDisplay : View {
         val contentWidth = width - paddingLeft - paddingRight
         val contentHeight = height - paddingTop - paddingBottom
 
-        //TODO!+ Add this line, after we have a nice bitmap.
-        //canvas.drawBitmap(bmp, measuredMatrix, paint)
+        val testRect = Rect(350,350,410,410)
+        canvas.drawRect(testRect, redOutlinePaint)
+
+        canvas.drawBitmap(image, measuredMatrix, solidRedPaint)
+        //canvas.drawBitmap(image, 40f, 40f, paint)
 
         //TODO!+ Find out why this is only shown in Portrait mode, when the other components ARE shown in Landscape mode.
         //TODO!- For testing.
-        canvas.drawRect(Rect(10,10,210,210), paint)
 
     }
 }
