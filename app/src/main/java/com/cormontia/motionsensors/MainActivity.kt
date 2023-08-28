@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import kotlin.math.acos
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
@@ -36,6 +37,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         tvHalfCosTheta = findViewById(R.id.rotationCosineHalfTheta)
 
         cvCustomView = findViewById(R.id.arrowDisplay)
+
+        /*
+        val testMatrix = android.graphics.Matrix()
+        testMatrix.setScale(3.0f, 4.0f)
+        //testMatrix.setTranslate(5.0f, 6.0f)
+        var testValues = FloatArray(9)
+        testMatrix.getValues(testValues)
+        for (i in 0 until 3) {
+            for (j in 0 until 3) {
+                val idx = 3 * i + j
+                Log.i("Matrix", "Matrix($i, $j)==${testValues[idx]}")
+            }
+        }
+         */
+
     }
 
     override fun onPause() {
@@ -66,6 +82,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
+    fun rad2deg(rad: Double): Double = 180.0 * rad / Math.PI
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             tvXValue.text = event.values[0].toString()
@@ -76,8 +94,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             // Could go for 3x3 - we're going to overwrite the Z-axis values in that matrix, right?
             val matrix = FloatArray(16)
 
+            //TODO?~ Convert this 4x4 android.opengl.Matrix to a 3x3 android.graphics.Matrix ?
             SensorManager.getRotationMatrixFromVector(matrix, event.values)
-            cvCustomView.receiveMatrix(matrix)
+
+            val halfTheta = acos(event.values[3]).toDouble()
+            val theta = 2.0 * halfTheta
+            val thetaInDegrees = rad2deg(theta)
+            val rotatedMatrix = android.graphics.Matrix()
+
+            rotatedMatrix.setTranslate(300f, 300f)
+            rotatedMatrix.preRotate(thetaInDegrees.toFloat())
+            val rotatedMatrixArray = FloatArray(9)
+            rotatedMatrix.getValues(rotatedMatrixArray)
+            cvCustomView.receiveMatrix(rotatedMatrixArray)
 
         } else {
             Log.i("Sensing!", "sensor event is null...")
