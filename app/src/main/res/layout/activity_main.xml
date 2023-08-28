@@ -11,34 +11,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/singleSpace"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/rotationYValue"
-     />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/rotationYValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/singleSpace"
-        app:layout_constraintTop_toBottomOf="@id/rotationXValue"
         app:layout_constraintBottom_toTopOf="@id/rotationZValue"
-    />
+        app:layout_constraintTop_toBottomOf="@id/rotationXValue" />
 
     <TextView
         android:id="@+id/rotationZValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/singleSpace"
-        app:layout_constraintTop_toBottomOf="@id/rotationYValue"
         app:layout_constraintBottom_toTopOf="@id/rotationCosineHalfTheta"
-    />
+        app:layout_constraintTop_toBottomOf="@id/rotationYValue" />
 
     <TextView
         android:id="@+id/rotationCosineHalfTheta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/singleSpace"
-        app:layout_constraintTop_toBottomOf="@id/rotationZValue"
-     />
+        app:layout_constraintTop_toBottomOf="@id/rotationZValue" />
+
+    <com.cormontia.motionsensors.ArrowDisplay
+        android:id="@+id/arrowDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="652dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rotationCosineHalfTheta" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
