@@ -20,8 +20,17 @@ class ArrowDisplay : View {
     private val measuredMatrix1 = Matrix()
     private val measuredMatrix2 = Matrix()
     private val measuredMatrix3 = Matrix()
+
+    private var eulerAngles = EulerAngles()
+    val rollMatrix = Matrix()
+    val pitchMatrix = Matrix()
+    val yawMatrix = Matrix()
+
+
+
     private val solidRedPaint = Paint()
     private val redOutlinePaint = Paint()
+
     private lateinit var image: Bitmap
 
     constructor(context: Context) : super(context) {
@@ -53,6 +62,10 @@ class ArrowDisplay : View {
         invalidate()
     }
 
+    fun receiveEulerAngles(angles: EulerAngles) {
+        this.eulerAngles = angles
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -73,16 +86,41 @@ class ArrowDisplay : View {
         val invert1 = measuredMatrix1.invert(measuredMatrix1)
         //Log.i("ArrowDisplay", "Invert #1: $invert1")
         //measuredMatrix1.postTranslate(100f, 100f)
-        canvas.drawBitmap(image, measuredMatrix1, solidRedPaint)
+//        canvas.drawBitmap(image, measuredMatrix1, solidRedPaint)
 
         val invert2 = measuredMatrix2.invert(measuredMatrix2)
         //Log.i("ArrowDisplay", "Invert #2: $invert2")
         //measuredMatrix2.postTranslate(200f, 100f)
-        canvas.drawBitmap(image, measuredMatrix2, solidRedPaint)
+//        canvas.drawBitmap(image, measuredMatrix2, solidRedPaint)
 
         val invert3 = measuredMatrix3.invert(measuredMatrix3)
         //Log.i("ArrowDisplay", "Invert #3: $invert3")
         //measuredMatrix3.postTranslate(300f, 100f)
-        canvas.drawBitmap(image, measuredMatrix3, solidRedPaint)
+//        canvas.drawBitmap(image, measuredMatrix3, solidRedPaint)
+
+        //TODO!~ Fix the pre- and post-translation so the arrow image rotates around its CENTER.
+
+        val halfWidth = image.width.toFloat()
+        val halfHeight = image.height.toFloat()
+
+        /*
+        rollMatrix.setRotate(-eulerAngles.roll.toFloat())
+        rollMatrix.preTranslate(-halfWidth, -halfHeight)
+        rollMatrix.postTranslate(200f + halfWidth, 300f + halfHeight)
+         */
+        rollMatrix.setTranslate(-halfWidth, -halfHeight)
+        rollMatrix.postRotate(-eulerAngles.roll.toFloat())
+        rollMatrix.postTranslate(200f + halfWidth, 300f + halfHeight)
+        canvas.drawBitmap(image, rollMatrix, solidRedPaint)
+
+        pitchMatrix.setRotate(-eulerAngles.pitch.toFloat())
+        pitchMatrix.preTranslate(-halfWidth, -halfHeight)
+        pitchMatrix.postTranslate(300f, 300f)
+        canvas.drawBitmap(image, pitchMatrix, solidRedPaint)
+
+        yawMatrix.setRotate(-eulerAngles.yaw.toFloat())
+        yawMatrix.preTranslate(-halfWidth, -halfHeight)
+        yawMatrix.postTranslate(400f, 300f)
+        canvas.drawBitmap(image, yawMatrix, solidRedPaint)
     }
 }

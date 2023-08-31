@@ -93,33 +93,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             //TODO?~ Convert this 4x4 android.opengl.Matrix to a 3x3 android.graphics.Matrix ?
             SensorManager.getRotationMatrixFromVector(matrix, event.values)
 
-            val halfTheta = acos(event.values[3]).toDouble()
-            val theta = 2.0 * halfTheta
-            val thetaInDegrees = rad2deg(theta)
-            val rotatedMatrix = android.graphics.Matrix()
+            //val halfTheta = acos(event.values[3]).toDouble()
+            //val theta = 2.0 * halfTheta
+            //val thetaInDegrees = rad2deg(theta)
+            //val rotatedMatrix = android.graphics.Matrix()
 
-            rotatedMatrix.setTranslate(300f, 300f)
-            rotatedMatrix.preRotate(thetaInDegrees.toFloat())
+            //rotatedMatrix.setTranslate(300f, 300f)
+            //rotatedMatrix.preRotate(thetaInDegrees.toFloat())
 
-            //if (false) {
-            //    val rotatedMatrixArray = FloatArray(9)
-            //    rotatedMatrix.getValues(rotatedMatrixArray)
-            //    cvCustomView.receiveMatrix(rotatedMatrixArray)
-            //} else {
-                val rotatedMatrixArray1 = openGLMatrixToGraphicsMatrix1(matrix)
-                val rotatedMatrixArray2 = openGLMatrixToGraphicsMatrix2(matrix)
-                val rotatedMatrixArray3 = openGLMatrixToGraphicsMatrix3(matrix)
-                cvCustomView.receiveMatrices(rotatedMatrixArray1, rotatedMatrixArray2, rotatedMatrixArray3)
-            //}
+            val rotatedMatrixArray1 = openGLMatrixToGraphicsMatrix1(matrix)
+            val rotatedMatrixArray2 = openGLMatrixToGraphicsMatrix2(matrix)
+            val rotatedMatrixArray3 = openGLMatrixToGraphicsMatrix3(matrix)
+            cvCustomView.receiveMatrices(rotatedMatrixArray1, rotatedMatrixArray2, rotatedMatrixArray3)
+
+            val quaternion = Quaternion(
+                event.values[0].toDouble(),
+                event.values[1].toDouble(),
+                event.values[2].toDouble(),
+                event.values[3].toDouble()
+            )
+            val eulerAngles = toEulerAngles(quaternion)
+            cvCustomView.receiveEulerAngles(eulerAngles)
+
 
             if (!displayQuaternion) {
-                val quaternion = Quaternion(
-                    event.values[0].toDouble(),
-                    event.values[1].toDouble(),
-                    event.values[2].toDouble(),
-                    event.values[3].toDouble()
-                )
-                val eulerAngles = toEulerAngles(quaternion)
 
                 tvXValue.text = eulerAngles.roll.roundToInt().toString()
                 tvYValue.text = eulerAngles.pitch.roundToInt().toString()
