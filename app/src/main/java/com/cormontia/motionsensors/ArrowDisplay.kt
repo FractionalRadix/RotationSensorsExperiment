@@ -9,6 +9,7 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 
 /**
@@ -16,7 +17,9 @@ import android.view.View
  */
 class ArrowDisplay : View {
 
-    private val measuredMatrix = Matrix()
+    private val measuredMatrix1 = Matrix()
+    private val measuredMatrix2 = Matrix()
+    private val measuredMatrix3 = Matrix()
     private val solidRedPaint = Paint()
     private val redOutlinePaint = Paint()
     private lateinit var image: Bitmap
@@ -43,8 +46,10 @@ class ArrowDisplay : View {
         image = BitmapFactory.decodeResource(ctx.resources, R.drawable.arrow)
     }
 
-    fun receiveMatrix(floats: FloatArray) {
-        measuredMatrix.setValues(floats)
+    fun receiveMatrices(floats1: FloatArray, floats2: FloatArray, floats3: FloatArray) {
+        measuredMatrix1.setValues(floats1)
+        measuredMatrix2.setValues(floats2)
+        measuredMatrix3.setValues(floats3)
         invalidate()
     }
 
@@ -64,11 +69,20 @@ class ArrowDisplay : View {
         val testRect = Rect(350,350,410,410)
         canvas.drawRect(testRect, redOutlinePaint)
 
-        canvas.drawBitmap(image, measuredMatrix, solidRedPaint)
-        //canvas.drawBitmap(image, 40f, 40f, paint)
 
-        //TODO!+ Find out why this is only shown in Portrait mode, when the other components ARE shown in Landscape mode.
-        //TODO!- For testing.
+        val invert1 = measuredMatrix1.invert(measuredMatrix1)
+        //Log.i("ArrowDisplay", "Invert #1: $invert1")
+        //measuredMatrix1.postTranslate(100f, 100f)
+        canvas.drawBitmap(image, measuredMatrix1, solidRedPaint)
 
+        val invert2 = measuredMatrix2.invert(measuredMatrix2)
+        //Log.i("ArrowDisplay", "Invert #2: $invert2")
+        //measuredMatrix2.postTranslate(200f, 100f)
+        canvas.drawBitmap(image, measuredMatrix2, solidRedPaint)
+
+        val invert3 = measuredMatrix3.invert(measuredMatrix3)
+        //Log.i("ArrowDisplay", "Invert #3: $invert3")
+        //measuredMatrix3.postTranslate(300f, 100f)
+        canvas.drawBitmap(image, measuredMatrix3, solidRedPaint)
     }
 }
