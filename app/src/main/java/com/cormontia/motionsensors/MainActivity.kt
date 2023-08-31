@@ -9,8 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import com.cormontia.motionsensors.MatrixConverter.Companion.openGLMatrixToGraphicsMatrix1
+import com.cormontia.motionsensors.MatrixConverter.Companion.openGLMatrixToGraphicsMatrix2
+import com.cormontia.motionsensors.MatrixConverter.Companion.openGLMatrixToGraphicsMatrix3
+import com.cormontia.motionsensors.Trigonometry.Companion.toEulerAngles
 import kotlin.math.acos
 import kotlin.math.atan2
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -116,9 +121,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 )
                 val eulerAngles = toEulerAngles(quaternion)
 
-                tvXValue.text = eulerAngles.roll.toString()
-                tvYValue.text = eulerAngles.pitch.toString()
-                tvZValue.text = eulerAngles.yaw.toString()
+                tvXValue.text = eulerAngles.roll.roundToInt().toString()
+                tvYValue.text = eulerAngles.pitch.roundToInt().toString()
+                tvZValue.text = eulerAngles.yaw.roundToInt().toString()
                 tvHalfCosTheta.text = "N/A" //event.values[3].toString()
             }
 
@@ -128,93 +133,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    /**
-     * Given an array of float values, representing a 4x4 matrix in column-major order,
-     * return a 3*3 matrix that gives the transformation projected (orthonormal) on the YZ (?) plane.
-     */
-    private fun openGLMatrixToGraphicsMatrix1(matrix: FloatArray): FloatArray /* android.graphics.Matrix */ {
-        val newValues = FloatArray(9)
-
-        newValues[0] = matrix[0] ; newValues[1] = matrix[4]; newValues[2] = 0f //matrix[12]
-        newValues[3] = matrix[1] ; newValues[4] = matrix[5]; newValues[5] = 0f //matrix[13]
-        newValues[6] =     0f    ; newValues[7] =    0f;     newValues[8] = 1f
-
-        return newValues
-    }
-
-    /**
-     * Given an array of float values, representing a 4x4 matrix in column-major order,
-     * return a 3*3 matrix that gives the transformation projected (orthonormal) on the YZ (?) plane.
-     */
-    private fun openGLMatrixToGraphicsMatrix2(matrix: FloatArray): FloatArray /* android.graphics.Matrix */ {
-        val newValues = FloatArray(9)
-
-        newValues[0] = matrix[0] ; newValues[1] = matrix[8]; newValues[2] = 0f //matrix[12]
-        newValues[3] = matrix[1] ; newValues[4] = matrix[9]; newValues[5] = 0f //matrix[13]
-        newValues[6] =     0f    ; newValues[7] =    0f;     newValues[8] = 1f
-
-        return newValues
-    }
-
-    /**
-     * Given an array of float values, representing a 4x4 matrix in column-major order,
-     * return a 3*3 matrix that gives the transformation projected (orthonormal) on the YZ (?) plane.
-     */
-    private fun openGLMatrixToGraphicsMatrix3(matrix: FloatArray): FloatArray /* android.graphics.Matrix */ {
-        val newValues = FloatArray(9)
-
-        newValues[0] = matrix[4] ; newValues[1] = matrix[8]; newValues[2] = 0f //matrix[12]
-        newValues[3] = matrix[5] ; newValues[4] = matrix[9]; newValues[5] = 0f //matrix[13]
-        newValues[6] =     0f    ; newValues[7] =    0f;     newValues[8] = 1f
-
-        return newValues
-    }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
         // Not used in this app.
     }
-
-    // Taken from Wikipedia and translated to Kotlin:
-    // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-    class Quaternion(val w: Double, val x: Double, val y: Double, val z: Double)
-        //val w: Double = 0.0
-        //val x: Double = 0.0
-        //val y: Double = 0.0
-        //val z: Double = 0.0
-
-
-    class EulerAngles {
-        var roll: Double = 0.0
-        var pitch: Double = 0.0
-        var yaw: Double = 0.0
-    };
-
-    // This implementation assumes normalized quaternion
-    // converts to Euler angles in 3-2-1 sequence
-    private fun toEulerAngles(q: Quaternion): EulerAngles {
-        val angles = EulerAngles()
-
-        // roll (x-axis rotation)
-        val sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-        val cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-        angles.roll = atan2(sinr_cosp, cosr_cosp);
-        angles.roll = radiansToDegrees(angles.roll)
-
-        //TODO!+ Handle the +90 degrees / -90 degrees situation!
-        // pitch (y-axis rotation)
-        val sinp = sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-        val cosp = sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-        angles.pitch = 2 * atan2(sinp, cosp) - Math.PI / 2;
-        angles.pitch = radiansToDegrees(angles.pitch)
-
-        // yaw (z-axis rotation)
-        val siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-        val cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-        angles.yaw = atan2(siny_cosp, cosy_cosp);
-        angles.yaw = radiansToDegrees(angles.yaw)
-
-        return angles;
-    }
-
-    private fun radiansToDegrees(radians: Double) = 180.0 * radians / Math.PI
 }
