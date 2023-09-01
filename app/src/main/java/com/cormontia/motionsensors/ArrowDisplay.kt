@@ -1,16 +1,19 @@
 package com.cormontia.motionsensors
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Interpolator
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 
 /**
  * TODO: document your custom view class.
@@ -22,16 +25,20 @@ class ArrowDisplay : View {
     private val measuredMatrix3 = Matrix()
 
     private var eulerAngles = EulerAngles()
-    val rollMatrix = Matrix()
-    val pitchMatrix = Matrix()
-    val yawMatrix = Matrix()
-
-
+    private val rollMatrix = Matrix()
+    private val pitchMatrix = Matrix()
+    private val yawMatrix = Matrix()
 
     private val solidRedPaint = Paint()
     private val redOutlinePaint = Paint()
 
     private lateinit var image: Bitmap
+
+    //Experimental: add a fourth arrow, that rotates by itself, independent of phone orientation.
+    // The purpose is to test the translations.
+    private val rotationAnimator = ValueAnimator.ofFloat(0.0f, 360.toFloat())
+    private var animatedRotation = 0.0f
+    private var animatedMatrix = Matrix()
 
     constructor(context: Context) : super(context) {
         init(context, null, 0)
@@ -53,6 +60,27 @@ class ArrowDisplay : View {
         redOutlinePaint.style = Paint.Style.STROKE
 
         image = BitmapFactory.decodeResource(ctx.resources, R.drawable.arrow)
+
+        rotationAnimator.addUpdateListener {
+            animatedRotation = it.animatedValue as Float //TODO?~ Use animatedFraction instead?
+            animatedMatrix = transformArrow(animatedRotation, image.width, image.height)
+            invalidate()
+        }
+        rotationAnimator.interpolator = LinearInterpolator()
+        rotationAnimator.duration = 5000
+        rotationAnimator.repeatCount = ValueAnimator.INFINITE
+        rotationAnimator.start()
+    }
+
+    private fun transformArrow(angle: Float, width: Int, height: Int): Matrix {
+        val result = Matrix()
+        val halfWidth = width / 2.0f
+        val halfHeight = height / 2.0f
+        result.setTranslate(-halfWidth, -halfHeight)
+        result.postRotate(angle)
+        result.postTranslate(500f + halfWidth, 300f + halfHeight)
+        //Log.i("transformArrow", "angle==$angle")
+        return result
     }
 
     fun receiveMatrices(floats1: FloatArray, floats2: FloatArray, floats3: FloatArray) {
@@ -122,5 +150,7 @@ class ArrowDisplay : View {
         yawMatrix.preTranslate(-halfWidth, -halfHeight)
         yawMatrix.postTranslate(400f, 300f)
         canvas.drawBitmap(image, yawMatrix, solidRedPaint)
+
+        canvas.drawBitmap(image, animatedMatrix, solidRedPaint)
     }
 }
