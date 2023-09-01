@@ -6,12 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Interpolator
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
 
@@ -25,9 +23,9 @@ class ArrowDisplay : View {
     private val measuredMatrix3 = Matrix()
 
     private var eulerAngles = EulerAngles()
-    private val rollMatrix = Matrix()
-    private val pitchMatrix = Matrix()
-    private val yawMatrix = Matrix()
+    private var rollMatrix = Matrix()
+    private var pitchMatrix = Matrix()
+    private var yawMatrix = Matrix()
 
     private val solidRedPaint = Paint()
     private val redOutlinePaint = Paint()
@@ -62,8 +60,8 @@ class ArrowDisplay : View {
         image = BitmapFactory.decodeResource(ctx.resources, R.drawable.arrow)
 
         rotationAnimator.addUpdateListener {
-            animatedRotation = it.animatedValue as Float //TODO?~ Use animatedFraction instead?
-            animatedMatrix = transformArrow(animatedRotation, image.width, image.height)
+            animatedRotation = it.animatedValue as Float
+            animatedMatrix = transformArrow(animatedRotation, image.width, image.height, 300, 450)
             invalidate()
         }
         rotationAnimator.interpolator = LinearInterpolator()
@@ -72,14 +70,13 @@ class ArrowDisplay : View {
         rotationAnimator.start()
     }
 
-    private fun transformArrow(angle: Float, width: Int, height: Int): Matrix {
+    private fun transformArrow(angle: Float, width: Int, height: Int, tx: Int, ty: Int): Matrix {
         val result = Matrix()
         val halfWidth = width / 2.0f
         val halfHeight = height / 2.0f
         result.setTranslate(-halfWidth, -halfHeight)
         result.postRotate(angle)
-        result.postTranslate(500f + halfWidth, 300f + halfHeight)
-        //Log.i("transformArrow", "angle==$angle")
+        result.postTranslate(tx + halfWidth, ty + halfHeight)
         return result
     }
 
@@ -110,7 +107,6 @@ class ArrowDisplay : View {
         val testRect = Rect(350,350,410,410)
         canvas.drawRect(testRect, redOutlinePaint)
 
-
         val invert1 = measuredMatrix1.invert(measuredMatrix1)
         //Log.i("ArrowDisplay", "Invert #1: $invert1")
         //measuredMatrix1.postTranslate(100f, 100f)
@@ -126,29 +122,13 @@ class ArrowDisplay : View {
         //measuredMatrix3.postTranslate(300f, 100f)
 //        canvas.drawBitmap(image, measuredMatrix3, solidRedPaint)
 
-        //TODO!~ Fix the pre- and post-translation so the arrow image rotates around its CENTER.
-
-        val halfWidth = image.width.toFloat()
-        val halfHeight = image.height.toFloat()
-
-        /*
-        rollMatrix.setRotate(-eulerAngles.roll.toFloat())
-        rollMatrix.preTranslate(-halfWidth, -halfHeight)
-        rollMatrix.postTranslate(200f + halfWidth, 300f + halfHeight)
-         */
-        rollMatrix.setTranslate(-halfWidth, -halfHeight)
-        rollMatrix.postRotate(-eulerAngles.roll.toFloat())
-        rollMatrix.postTranslate(200f + halfWidth, 300f + halfHeight)
+        rollMatrix = transformArrow(eulerAngles.roll.toFloat(), image.width, image.height, 200, 300)
         canvas.drawBitmap(image, rollMatrix, solidRedPaint)
 
-        pitchMatrix.setRotate(-eulerAngles.pitch.toFloat())
-        pitchMatrix.preTranslate(-halfWidth, -halfHeight)
-        pitchMatrix.postTranslate(300f, 300f)
+        pitchMatrix = transformArrow(eulerAngles.pitch.toFloat(), image.width, image.height, 300, 300)
         canvas.drawBitmap(image, pitchMatrix, solidRedPaint)
 
-        yawMatrix.setRotate(-eulerAngles.yaw.toFloat())
-        yawMatrix.preTranslate(-halfWidth, -halfHeight)
-        yawMatrix.postTranslate(400f, 300f)
+        yawMatrix = transformArrow(eulerAngles.yaw.toFloat(), image.width, image.height, 400, 300)
         canvas.drawBitmap(image, yawMatrix, solidRedPaint)
 
         canvas.drawBitmap(image, animatedMatrix, solidRedPaint)
